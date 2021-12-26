@@ -1,0 +1,71 @@
+name: Run kustomize to update images and push result to another repository
+description: >-
+  Useful to push images update to a master repository containing central manifests
+inputs:
+  kustomize-version:
+    description: Kustomize version to use. If not set the latest available will be use
+    required: false
+    default: ''
+  kustomize-edit-images:
+    description: >-
+      The images (space separated) to edit using kustomize, for example:
+      node:8.15.0 mysql=mariadb
+      For more information run: kustomize edit set image -h
+    required: true
+  user-email:
+    description: Email for the git commit
+    required: true
+  user-name:
+    description: >-
+      [Optional] Name for the git commit. Defaults to the destination
+      username/organization name
+    required: false
+    default: ''
+  github-server:
+    description: 'Github server'
+    default: 'github.com'
+    required: false
+  repository-username:
+    description: >-
+      Name of the destination username/organization.
+      In https://github.com/kubernetes-sigs/kustomize is: kubernetes-sigs
+    required: true
+  repository-name:
+    description: >-
+      Destination repository
+      In https://github.com/kubernetes-sigs/kustomize is: kustomize
+    required: true
+  branch:
+    description: >-
+      [Optional] set target branch name for the destination repository. Defaults
+      to "main"
+    default: main
+    required: false
+  directory:
+    description: '[Optional] The directory in which we will run kustomize'
+    default: ''
+    required: false
+  commit-message:
+    description: >-
+      [Optional] Commit message. ORIGIN_COMMIT and KUSTOMIZE_IMAGES are
+      replaced by the URL@commit and the submited images
+    default: Updated KUSTOMIZE_IMAGES from ORIGIN_COMMIT
+    required: false
+
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - '${{ inputs.kustomize-version }}'
+    - '${{ inputs.kustomize-edit-images }}'
+    - '${{ inputs.user-email }}'
+    - '${{ inputs.user-name }}'
+    - '${{ inputs.github-server }}'
+    - '${{ inputs.repository-username }}'
+    - '${{ inputs.repository-name }}'
+    - '${{ inputs.branch }}'
+    - '${{ inputs.directory }}'
+    - '${{ inputs.commit-message }}'
+branding:
+  icon: git-commit
+  color: blue
