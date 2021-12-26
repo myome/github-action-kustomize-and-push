@@ -1,6 +1,6 @@
 name: Run kustomize to update images and push result to another repository
 description: >-
-  Useful to push images update to a master repository containing central manifests
+  Useful to push images updates to a master repository containing central manifests
 inputs:
   kustomize-version:
     description: Kustomize version to use. If not set the latest available will be use
