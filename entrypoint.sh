@@ -50,11 +50,25 @@ git config --global user.name "$USER_NAME"
 	exit 1
 }
 
+if [ -d $CLONE_DIR/$TARGET_DIRECTORY ] then
+    echo "::error::Requested directory dont' exist: $CLONE_DIR/$TARGET_DIRECTORY"
+	ls -a $CLONE_DIR/$TARGET_DIRECTORY
+    exit 1
+fi
+
+if [ -f $CLONE_DIR/$TARGET_DIRECTORY/kustomization.yaml ] then
+    echo "::error::kustomization.yaml dont' exist in $CLONE_DIR/$TARGET_DIRECTORY"
+	exit 1
+fi
+
 echo "[+] cd into $CLONE_DIR/$TARGET_DIRECTORY"
 cd $CLONE_DIR/$TARGET_DIRECTORY
 
 echo "[+] Running Kustomize"
-kustomize edit set image $KUSTOMIZE_IMAGES
+kustomize edit set image $KUSTOMIZE_IMAGES || {
+    echo "::error::Kustomize failed"
+    exit 1
+}
 
 echo "[+] Adding git commit"
 git add .
