@@ -51,13 +51,13 @@ git config --global user.name "$USER_NAME"
 }
 
 if [ ! -d "$CLONE_DIR/$TARGET_DIRECTORY" ]; then
-    echo "::error::Requested directory dont' exist: $CLONE_DIR/$TARGET_DIRECTORY"
-	ls -a $CLONE_DIR/$TARGET_DIRECTORY
+    echo "::error::Requested directory doesn't exist: $CLONE_DIR/$TARGET_DIRECTORY"
+	ls -a $CLONE_DIR/
     exit 1
 fi
 
-if [ ! -f $CLONE_DIR/$TARGET_DIRECTORY/kustomization.yaml ]; then
-    echo "::error::kustomization.yaml dont' exist in $CLONE_DIR/$TARGET_DIRECTORY"
+if [ ! -f "$CLONE_DIR/$TARGET_DIRECTORY/kustomization.yaml" ]; then
+    echo "::error::kustomization.yaml doesn't exist in $CLONE_DIR/$TARGET_DIRECTORY"
 	exit 1
 fi
 
