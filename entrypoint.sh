@@ -33,6 +33,7 @@ if [ -z "$USER_NAME" ]; then
 	USER_NAME="$REPOSITORY_USERNAME"
 fi
 
+BASE_DIR=$(pwd)
 CLONE_DIR=$(mktemp -d)
 
 echo "[+] Cloning destination git repository $REPOSITORY_NAME"
@@ -65,7 +66,7 @@ echo "[+] cd into $CLONE_DIR/$TARGET_DIRECTORY"
 cd $CLONE_DIR/$TARGET_DIRECTORY
 
 echo "[+] Running Kustomize"
-kustomize edit set image $KUSTOMIZE_IMAGES || {
+$BASE_DIR/kustomize edit set image $KUSTOMIZE_IMAGES || {
     echo "::error::Kustomize failed"
     exit 1
 }
