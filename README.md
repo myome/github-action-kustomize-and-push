@@ -2,6 +2,17 @@
 
 Useful to push images updates to a master repository containing central manifests.
 
+### When to use it?
+
+If you are using Kubernetes, usually, after building and pushing a Docker image to it's registry
+you will probably need to push that new tag to the repository that has all your manifest.
+
+### Flow:
+
+- Clones the central repository
+- Runs: kustomize edit set image
+- Pushes the resulted manifest to the central repository
+
 There are different variables to setup the action:
 
 ## Inputs
@@ -78,3 +89,8 @@ Then make the token available to the Github Action following the steps:
     user-email: demo@usermail.com
     directory: enviroment/qa
 ```
+
+## TODO:
+
+- Add real world examples
+- Add a working example
