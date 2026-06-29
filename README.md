@@ -19,7 +19,9 @@ There are different variables to setup the action:
 
 ### `kustomize-version` (argument) [optional]
 
-Kustomize version to use. If not set the latest available will be use.
+Kustomize version to use. If not set, a pinned version (baked into the action's
+image at build time) is used, so no download happens at run time. When set, that
+exact version is downloaded directly from the Kustomize releases CDN.
 Check https://github.com/kubernetes-sigs/kustomize/releases for available versions
 
 ### `kustomize-edit-images` (argument)

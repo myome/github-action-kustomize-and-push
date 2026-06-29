@@ -20,20 +20,40 @@ COMMIT_MESSAGE="${COMMIT_MESSAGE/ORIGIN_COMMIT/$ORIGIN_COMMIT}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/\$GITHUB_REF/$GITHUB_REF}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/KUSTOMIZE_IMAGES/$KUSTOMIZE_IMAGES}"
 
-# Make sure we have a version:
-if [ -z $KUSTOMIZE_VERSION ]; then
-    echo "[+] Downloding Kustomize latest version"
-    curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-else
-    echo "[+] Downloding Kustomize $KUSTOMIZE_VERSION version"
-    curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh $KUSTOMIZE_VERSION"  | bash
+# Resolve which kustomize binary to use.
+#
+# A kustomize binary is baked into the image at build time (see Dockerfile),
+# so by default we use it directly and never touch the network. We deliberately
+# avoid the upstream install_kustomize.sh script because it queries the
+# anonymous GitHub REST API, whose rate limit is shared across GitHub-hosted
+# runner IPs and routinely gets exhausted, breaking every run at once.
+KUSTOMIZE="kustomize"
+if [ -n "$KUSTOMIZE_VERSION" ]; then
+    # An explicit version was requested: download exactly that release directly
+    # from the releases CDN (no GitHub API involved).
+    echo "[+] Downloading Kustomize $KUSTOMIZE_VERSION"
+    case "$(uname -m)" in
+        x86_64) ARCH=amd64 ;;
+        aarch64|arm64) ARCH=arm64 ;;
+        *) echo "::error::Unsupported architecture: $(uname -m)"; exit 1 ;;
+    esac
+    DOWNLOAD_DIR=$(mktemp -d)
+    TARBALL="kustomize_v${KUSTOMIZE_VERSION}_linux_${ARCH}.tar.gz"
+    URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/${TARBALL}"
+    if ! curl -fsSL --retry 5 --retry-all-errors -o "$DOWNLOAD_DIR/$TARBALL" "$URL"; then
+        echo "::error::Failed to download Kustomize $KUSTOMIZE_VERSION from $URL"
+        exit 1
+    fi
+    tar -xzf "$DOWNLOAD_DIR/$TARBALL" -C "$DOWNLOAD_DIR" kustomize
+    KUSTOMIZE="$DOWNLOAD_DIR/kustomize"
 fi
+
+echo "[+] Using kustomize: $("$KUSTOMIZE" version)"
 
 if [ -z "$USER_NAME" ]; then
 	USER_NAME="$REPOSITORY_USERNAME"
 fi
 
-BASE_DIR=$(pwd)
 CLONE_DIR=$(mktemp -d)
 
 echo "[+] Cloning destination git repository $REPOSITORY_NAME"
@@ -66,7 +86,7 @@ echo "[+] cd into $CLONE_DIR/$TARGET_DIRECTORY"
 cd $CLONE_DIR/$TARGET_DIRECTORY
 
 echo "[+] Running Kustomize"
-$BASE_DIR/kustomize edit set image $KUSTOMIZE_IMAGES || {
+"$KUSTOMIZE" edit set image $KUSTOMIZE_IMAGES || {
     echo "::error::Kustomize failed"
     exit 1
 }

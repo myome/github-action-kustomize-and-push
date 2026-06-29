@@ -3,7 +3,10 @@ description: >-
   Useful to push images updates to a master repository containing central manifests
 inputs:
   kustomize-version:
-    description: Kustomize version to use. If not set the latest available will be use
+    description: >-
+      Kustomize version to use. If not set, the pinned version baked into the
+      action image is used (no download at run time). If set, that exact version
+      is downloaded directly from the Kustomize releases CDN.
     required: false
     default: ''
   kustomize-edit-images:
