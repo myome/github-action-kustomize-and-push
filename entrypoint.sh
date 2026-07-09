@@ -19,11 +19,7 @@ COMMIT_MESSAGE="${COMMIT_MESSAGE/ORIGIN_COMMIT/$ORIGIN_COMMIT}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/\$GITHUB_REF/$GITHUB_REF}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/KUSTOMIZE_IMAGES/$KUSTOMIZE_IMAGES}"
 
-# kustomize is baked into the image at /usr/local/bin/kustomize (pinned in the
-# Dockerfile). We intentionally do not download it at run time: the old approach
-# piped a remote install script into a shell and hit the anonymous GitHub REST
-# API, whose rate limit is shared across GitHub-hosted runner IPs and would get
-# exhausted, breaking every run at once.
+# kustomize is baked into the image at build time (pinned in the Dockerfile).
 echo "[+] Using kustomize: $(kustomize version)"
 
 if [ -z "$USER_NAME" ]; then
