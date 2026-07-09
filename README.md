@@ -19,9 +19,7 @@ There are different variables to setup the action:
 
 ### `kustomize-version` (argument) [optional]
 
-Kustomize version to use. The requested version is downloaded directly from the
-Kustomize release tarball on GitHub (not via the GitHub API). If not set, a
-pinned default version is used.
+Kustomize version to use. If not set the latest available will be use.
 Check https://github.com/kubernetes-sigs/kustomize/releases for available versions
 
 ### `kustomize-edit-images` (argument)
