@@ -4,16 +4,15 @@ set -e  # if a command fails it stops the execution
 set -u  # script fails if trying to access to an undefined variable
 
 echo "[+] Action start"
-KUSTOMIZE_VERSION="${1}"
-KUSTOMIZE_IMAGES="${2}"
-USER_EMAIL="${3}"
-USER_NAME="${4}"
-GITHUB_SERVER="${5}"
-REPOSITORY_USERNAME="${6}"
-REPOSITORY_NAME="${7}"
-TARGET_BRANCH="${8}"
-TARGET_DIRECTORY="${9}"
-COMMIT_MESSAGE="${10}"
+KUSTOMIZE_IMAGES="${1}"
+USER_EMAIL="${2}"
+USER_NAME="${3}"
+GITHUB_SERVER="${4}"
+REPOSITORY_USERNAME="${5}"
+REPOSITORY_NAME="${6}"
+TARGET_BRANCH="${7}"
+TARGET_DIRECTORY="${8}"
+COMMIT_MESSAGE="${9}"
 
 ORIGIN_COMMIT="https://$GITHUB_SERVER/$GITHUB_REPOSITORY/commit/$GITHUB_SHA"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/ORIGIN_COMMIT/$ORIGIN_COMMIT}"
@@ -25,9 +24,6 @@ COMMIT_MESSAGE="${COMMIT_MESSAGE/KUSTOMIZE_IMAGES/$KUSTOMIZE_IMAGES}"
 # piped a remote install script into a shell and hit the anonymous GitHub REST
 # API, whose rate limit is shared across GitHub-hosted runner IPs and would get
 # exhausted, breaking every run at once.
-if [ -n "$KUSTOMIZE_VERSION" ]; then
-    echo "::warning::kustomize-version ($KUSTOMIZE_VERSION) is ignored; this action uses the kustomize version pinned in its image."
-fi
 echo "[+] Using kustomize: $(kustomize version)"
 
 if [ -z "$USER_NAME" ]; then

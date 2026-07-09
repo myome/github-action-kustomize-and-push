@@ -15,14 +15,10 @@ you will probably need to push that new tag to the repository that has all your 
 
 There are different variables to setup the action:
 
+The kustomize version is pinned in this action's image (see the
+[Dockerfile](Dockerfile)); to change it, bump the pinned image tag.
+
 ## Inputs
-
-### `kustomize-version` (argument) [optional]
-
-Deprecated / ignored. The kustomize version is pinned in this action's image
-(see the [Dockerfile](Dockerfile)); this input is retained for compatibility but
-has no effect, and setting it emits a warning. To change the kustomize version,
-bump the pinned image tag in the Dockerfile.
 
 ### `kustomize-edit-images` (argument)
 
