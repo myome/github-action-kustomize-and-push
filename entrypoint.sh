@@ -20,33 +20,36 @@ COMMIT_MESSAGE="${COMMIT_MESSAGE/ORIGIN_COMMIT/$ORIGIN_COMMIT}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/\$GITHUB_REF/$GITHUB_REF}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/KUSTOMIZE_IMAGES/$KUSTOMIZE_IMAGES}"
 
-# Resolve which kustomize binary to use.
+# Download kustomize directly from the release tarball on GitHub.
 #
-# A kustomize binary is baked into the image at build time (see Dockerfile),
-# so by default we use it directly and never touch the network. We deliberately
-# avoid the upstream install_kustomize.sh script because it queries the
-# anonymous GitHub REST API, whose rate limit is shared across GitHub-hosted
-# runner IPs and routinely gets exhausted, breaking every run at once.
-KUSTOMIZE="kustomize"
-if [ -n "$KUSTOMIZE_VERSION" ]; then
-    # An explicit version was requested: download exactly that release directly
-    # from the releases CDN (no GitHub API involved).
-    echo "[+] Downloading Kustomize $KUSTOMIZE_VERSION"
-    case "$(uname -m)" in
-        x86_64) ARCH=amd64 ;;
-        aarch64|arm64) ARCH=arm64 ;;
-        *) echo "::error::Unsupported architecture: $(uname -m)"; exit 1 ;;
-    esac
-    DOWNLOAD_DIR=$(mktemp -d)
-    TARBALL="kustomize_v${KUSTOMIZE_VERSION}_linux_${ARCH}.tar.gz"
-    URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/${TARBALL}"
-    if ! curl -fsSL --retry 5 --retry-all-errors -o "$DOWNLOAD_DIR/$TARBALL" "$URL"; then
-        echo "::error::Failed to download Kustomize $KUSTOMIZE_VERSION from $URL"
-        exit 1
-    fi
-    tar -xzf "$DOWNLOAD_DIR/$TARBALL" -C "$DOWNLOAD_DIR" kustomize
-    KUSTOMIZE="$DOWNLOAD_DIR/kustomize"
+# We deliberately do NOT use the upstream install_kustomize.sh script: it
+# resolves the download URL via the anonymous GitHub REST API, whose rate limit
+# is shared across GitHub-hosted runner IPs and routinely gets exhausted,
+# breaking every run at once. Fetching the release asset directly avoids the API.
+#
+# The GitHub API is also the only reliable way to discover the "latest"
+# kustomize release (this repo tags kustomize/, api/, kyaml/ and cmd/config/
+# separately), so we default to a pinned version when none is requested.
+DEFAULT_KUSTOMIZE_VERSION="5.8.1"
+if [ -z "$KUSTOMIZE_VERSION" ]; then
+    KUSTOMIZE_VERSION="$DEFAULT_KUSTOMIZE_VERSION"
 fi
+
+echo "[+] Downloading Kustomize $KUSTOMIZE_VERSION"
+case "$(uname -m)" in
+    x86_64) ARCH=amd64 ;;
+    aarch64|arm64) ARCH=arm64 ;;
+    *) echo "::error::Unsupported architecture: $(uname -m)"; exit 1 ;;
+esac
+DOWNLOAD_DIR=$(mktemp -d)
+TARBALL="kustomize_v${KUSTOMIZE_VERSION}_linux_${ARCH}.tar.gz"
+URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/${TARBALL}"
+if ! curl -fsSL --retry 5 --retry-all-errors -o "$DOWNLOAD_DIR/$TARBALL" "$URL"; then
+    echo "::error::Failed to download Kustomize $KUSTOMIZE_VERSION from $URL"
+    exit 1
+fi
+tar -xzf "$DOWNLOAD_DIR/$TARBALL" -C "$DOWNLOAD_DIR" kustomize
+KUSTOMIZE="$DOWNLOAD_DIR/kustomize"
 
 echo "[+] Using kustomize: $("$KUSTOMIZE" version)"
 
