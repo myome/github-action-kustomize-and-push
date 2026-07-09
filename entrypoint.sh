@@ -20,28 +20,20 @@ COMMIT_MESSAGE="${COMMIT_MESSAGE/ORIGIN_COMMIT/$ORIGIN_COMMIT}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/\$GITHUB_REF/$GITHUB_REF}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/KUSTOMIZE_IMAGES/$KUSTOMIZE_IMAGES}"
 
-# install_kustomize.sh resolves the download via the GitHub REST API. Export
-# GITHUB_TOKEN (from the token this action already has) so those requests are
-# authenticated: unauthenticated requests use the 60/hr limit shared across all
-# GitHub-hosted runner IPs, which gets exhausted and breaks every run at once,
-# whereas an authenticated token gets 5000/hr. See the note in the script:
-# "You can authenticate by exporting the GITHUB_TOKEN in the environment".
-export GITHUB_TOKEN="$API_TOKEN_GITHUB"
-
-# Make sure we have a version:
-if [ -z "$KUSTOMIZE_VERSION" ]; then
-    echo "[+] Downloding Kustomize latest version"
-    curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-else
-    echo "[+] Downloding Kustomize $KUSTOMIZE_VERSION version"
-    curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s -- "$KUSTOMIZE_VERSION"
+# kustomize is baked into the image at /usr/local/bin/kustomize (pinned in the
+# Dockerfile). We intentionally do not download it at run time: the old approach
+# piped a remote install script into a shell and hit the anonymous GitHub REST
+# API, whose rate limit is shared across GitHub-hosted runner IPs and would get
+# exhausted, breaking every run at once.
+if [ -n "$KUSTOMIZE_VERSION" ]; then
+    echo "::warning::kustomize-version ($KUSTOMIZE_VERSION) is ignored; this action uses the kustomize version pinned in its image."
 fi
+echo "[+] Using kustomize: $(kustomize version)"
 
 if [ -z "$USER_NAME" ]; then
 	USER_NAME="$REPOSITORY_USERNAME"
 fi
 
-BASE_DIR=$(pwd)
 CLONE_DIR=$(mktemp -d)
 
 echo "[+] Cloning destination git repository $REPOSITORY_NAME"
@@ -74,7 +66,7 @@ echo "[+] cd into $CLONE_DIR/$TARGET_DIRECTORY"
 cd $CLONE_DIR/$TARGET_DIRECTORY
 
 echo "[+] Running Kustomize"
-$BASE_DIR/kustomize edit set image $KUSTOMIZE_IMAGES || {
+kustomize edit set image $KUSTOMIZE_IMAGES || {
     echo "::error::Kustomize failed"
     exit 1
 }

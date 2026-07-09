@@ -3,7 +3,10 @@ description: >-
   Useful to push images updates to a master repository containing central manifests
 inputs:
   kustomize-version:
-    description: Kustomize version to use. If not set the latest available will be use
+    description: >-
+      Deprecated / ignored. The kustomize version is pinned in this action's
+      image (see the Dockerfile); this input is retained for compatibility but
+      has no effect. Setting it emits a warning.
     required: false
     default: ''
   kustomize-edit-images:

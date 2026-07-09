@@ -19,8 +19,10 @@ There are different variables to setup the action:
 
 ### `kustomize-version` (argument) [optional]
 
-Kustomize version to use. If not set the latest available will be use.
-Check https://github.com/kubernetes-sigs/kustomize/releases for available versions
+Deprecated / ignored. The kustomize version is pinned in this action's image
+(see the [Dockerfile](Dockerfile)); this input is retained for compatibility but
+has no effect, and setting it emits a warning. To change the kustomize version,
+bump the pinned image tag in the Dockerfile.
 
 ### `kustomize-edit-images` (argument)
 
