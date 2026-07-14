@@ -2,10 +2,6 @@ name: Run kustomize to update images and push result to another repository
 description: >-
   Useful to push images updates to a master repository containing central manifests
 inputs:
-  kustomize-version:
-    description: Kustomize version to use. If not set the latest available will be use
-    required: false
-    default: ''
   kustomize-edit-images:
     description: >-
       The images (space separated) to edit using kustomize, for example:
@@ -56,7 +52,6 @@ runs:
   using: docker
   image: Dockerfile
   args:
-    - '${{ inputs.kustomize-version }}'
     - '${{ inputs.kustomize-edit-images }}'
     - '${{ inputs.user-email }}'
     - '${{ inputs.user-name }}'

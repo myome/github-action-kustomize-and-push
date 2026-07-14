@@ -4,36 +4,28 @@ set -e  # if a command fails it stops the execution
 set -u  # script fails if trying to access to an undefined variable
 
 echo "[+] Action start"
-KUSTOMIZE_VERSION="${1}"
-KUSTOMIZE_IMAGES="${2}"
-USER_EMAIL="${3}"
-USER_NAME="${4}"
-GITHUB_SERVER="${5}"
-REPOSITORY_USERNAME="${6}"
-REPOSITORY_NAME="${7}"
-TARGET_BRANCH="${8}"
-TARGET_DIRECTORY="${9}"
-COMMIT_MESSAGE="${10}"
+KUSTOMIZE_IMAGES="${1}"
+USER_EMAIL="${2}"
+USER_NAME="${3}"
+GITHUB_SERVER="${4}"
+REPOSITORY_USERNAME="${5}"
+REPOSITORY_NAME="${6}"
+TARGET_BRANCH="${7}"
+TARGET_DIRECTORY="${8}"
+COMMIT_MESSAGE="${9}"
 
 ORIGIN_COMMIT="https://$GITHUB_SERVER/$GITHUB_REPOSITORY/commit/$GITHUB_SHA"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/ORIGIN_COMMIT/$ORIGIN_COMMIT}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/\$GITHUB_REF/$GITHUB_REF}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE/KUSTOMIZE_IMAGES/$KUSTOMIZE_IMAGES}"
 
-# Make sure we have a version:
-if [ -z $KUSTOMIZE_VERSION ]; then
-    echo "[+] Downloding Kustomize latest version"
-    curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-else
-    echo "[+] Downloding Kustomize $KUSTOMIZE_VERSION version"
-    curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh $KUSTOMIZE_VERSION"  | bash
-fi
+# kustomize is baked into the image at build time (pinned in the Dockerfile).
+echo "[+] Using kustomize: $(kustomize version)"
 
 if [ -z "$USER_NAME" ]; then
 	USER_NAME="$REPOSITORY_USERNAME"
 fi
 
-BASE_DIR=$(pwd)
 CLONE_DIR=$(mktemp -d)
 
 echo "[+] Cloning destination git repository $REPOSITORY_NAME"
@@ -66,7 +58,7 @@ echo "[+] cd into $CLONE_DIR/$TARGET_DIRECTORY"
 cd $CLONE_DIR/$TARGET_DIRECTORY
 
 echo "[+] Running Kustomize"
-$BASE_DIR/kustomize edit set image $KUSTOMIZE_IMAGES || {
+kustomize edit set image $KUSTOMIZE_IMAGES || {
     echo "::error::Kustomize failed"
     exit 1
 }

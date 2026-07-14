@@ -15,12 +15,10 @@ you will probably need to push that new tag to the repository that has all your 
 
 There are different variables to setup the action:
 
+The kustomize version is pinned in this action's image (see the
+[Dockerfile](Dockerfile)); to change it, bump the pinned image tag.
+
 ## Inputs
-
-### `kustomize-version` (argument) [optional]
-
-Kustomize version to use. If not set the latest available will be use.
-Check https://github.com/kubernetes-sigs/kustomize/releases for available versions
 
 ### `kustomize-edit-images` (argument)
 
