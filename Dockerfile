@@ -1,4 +1,7 @@
-FROM public.ecr.aws/docker/library/alpine:3.18
+# Anonymous pulls of public.ecr.aws share a per-IP monthly data quota. GitHub-hosted
+# runners share those egress IPs, so this build 429s with "Data limit exceeded".
+# mirror.gcr.io serves the same Docker Official alpine image without that quota.
+FROM mirror.gcr.io/library/alpine:3.18
 
 # Pinned kustomize, copied from the official SIG-CLI image. No remote script,
 # no GitHub API, no token needed to install. Bump this tag to upgrade.
